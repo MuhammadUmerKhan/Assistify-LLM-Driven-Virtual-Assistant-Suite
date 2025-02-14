@@ -10,10 +10,10 @@ from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hu
 logger = get_logger("LangChain-Chatbot")
 
 # ✅ Ensure Hugging Face API Token is set
-HUGGINGFACE_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN", "TOKEN")
+hugging_face_api_token = os.environ.get('HUGGINGFACEHUB_API_TOKEN')
 
 # Check if API token is missing
-if not HUGGINGFACE_API_TOKEN:
+if not hugging_face_api_token:
     st.error("❌ Missing Hugging Face API Token! Set `HUGGINGFACEHUB_API_TOKEN` in environment variables.")
     st.stop()  # Stop execution if API token is not available
 
