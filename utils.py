@@ -5,12 +5,15 @@ from datetime import datetime  # Used for logging timestamps
 from streamlit.logger import get_logger  # Streamlit's built-in logger
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings  # For embedding model
 from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hugging Face API
+from dotenv import load_dotenv
+load_dotenv()  # ✅ Load environment variables from .env
+
 
 # Initialize logger for tracking interactions and errors
 logger = get_logger("LangChain-Chatbot")
 
 # ✅ Ensure Hugging Face API Token is set
-hugging_face_api_token = os.environ.get('HUGGINGFACEHUB_API_TOKEN')
+hugging_face_api_token = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 
 # Check if API token is missing
 if not hugging_face_api_token:
@@ -74,11 +77,11 @@ def configure_llm():
 
     # Load the selected model from Hugging Face
     if llm_opt == "Mistral":
-        llm = HuggingFaceHub(repo_id="mistralai/Mistral-7B-Instruct-v0.1", huggingfacehub_api_token=HUGGINGFACE_API_TOKEN)
+        llm = HuggingFaceHub(repo_id="mistralai/Mistral-7B-Instruct-v0.1", huggingfacehub_api_token=hugging_face_api_token)
     elif llm_opt == "Llama-2":
-        llm = HuggingFaceHub(repo_id="meta-llama/Llama-2-7b-chat-hf", huggingfacehub_api_token=HUGGINGFACE_API_TOKEN)
+        llm = HuggingFaceHub(repo_id="meta-llama/Llama-2-7b-chat-hf", huggingfacehub_api_token=hugging_face_api_token)
     elif llm_opt == "Falcon":
-        llm = HuggingFaceHub(repo_id="tiiuae/falcon-7b-instruct", huggingfacehub_api_token=HUGGINGFACE_API_TOKEN)
+        llm = HuggingFaceHub(repo_id="tiiuae/falcon-7b-instruct", huggingfacehub_api_token=hugging_face_api_token)
     else:
         st.error("❌ Invalid selection. Please choose a valid LLM.")
         st.stop()  # Stop execution if an invalid selection is made
