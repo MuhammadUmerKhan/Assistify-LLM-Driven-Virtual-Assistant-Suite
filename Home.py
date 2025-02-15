@@ -13,7 +13,7 @@ st.header("Chatbot Implementations with Langchain")
 
 # Display GitHub and LinkedIn profile links using badges
 st.write("""
-[![view source code](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/MuhammadUmerKhan)
+[![view source code](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/MuhammadUmerKhan/LangChain-Chatbots)
 [![linkedin](https://img.shields.io/badge/Muhammad%20Umer-blue?logo=linkedin&color=gray)](https://www.linkedin.com/in/muhammad-umer-khan-61729b260/)
 """)
 
