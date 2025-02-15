@@ -19,7 +19,7 @@ st.header('Chat with your documents (Basic RAG)')
 st.write('Has access to custom documents and can respond to user queries by referring to the content within those documents')
 
 # Display a "View Source Code" badge with a GitHub link
-st.write('[![view source code](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/shashankdeshpande/langchain-chatbot/blob/master/pages/4_%F0%9F%93%84_chat_with_your_documents.py)')
+st.write('[![view source code](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/MuhammadUmerKhan/LangChain-Chatbots/blob/main/pages/%F0%9F%93%84_chat_with_your_documents.py)')
 
 class CustomDocChatbot:
     """A chatbot that enables users to ask questions about uploaded PDF documents using Retrieval-Augmented Generation (RAG)."""
