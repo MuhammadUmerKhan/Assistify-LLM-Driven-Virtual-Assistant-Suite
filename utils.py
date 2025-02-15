@@ -12,13 +12,15 @@ load_dotenv()  # ✅ Load environment variables from .env
 # Initialize logger for tracking interactions and errors
 logger = get_logger("LangChain-Chatbot")
 
-# ✅ Ensure Hugging Face API Token is set
-hugging_face_api_token = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
+# ✅ API Key Handling (For Local & Deployed Environments)
+hugging_face_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")  # Local Environment
+hf_api_token = st.secrets.get("HUGGINGFACEHUB_API_TOKEN")  # Streamlit Deployment
 
-# Check if API token is missing
-if not hugging_face_api_token:
-    st.error("❌ Missing Hugging Face API Token! Set `HUGGINGFACEHUB_API_TOKEN` in environment variables.")
-    st.stop()  # Stop execution if API token is not available
+# Check if API key is available
+api_token = hugging_face_api_token or hf_api_token  # Use available token
+if not api_token:
+    st.error("❌ Missing Hugging Face API Token! Set `HUGGINGFACEHUB_API_TOKEN` in `.env` (local) or Streamlit Secrets (deployed).")
+    st.stop()  # Stop execution if API token is missing
 
 # ✅ Decorator to enable chat history
 def enable_chat_history(func):
