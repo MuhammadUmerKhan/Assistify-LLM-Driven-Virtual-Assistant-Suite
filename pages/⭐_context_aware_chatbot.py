@@ -14,7 +14,7 @@ st.header('Context Aware Chatbot')
 st.write('Enhancing Chatbot Interactions through Context Awareness')
 
 # Display a "View Source Code" badge (linked to GitHub)
-st.write('[![view source code](https://img.shields.io/badge/view_source_code-gray?logo=github)]()')
+st.write('[![view source code](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/MuhammadUmerKhan/LangChain-Chatbots/blob/main/pages/%E2%AD%90_context_aware_chatbot.py)')
 
 class ContextChatbot:
     """A context-aware chatbot that maintains conversation history."""
