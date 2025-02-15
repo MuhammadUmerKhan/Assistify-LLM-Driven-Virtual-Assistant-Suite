@@ -9,7 +9,7 @@ from langchain.prompts import PromptTemplate  # LangChain's prompt template for 
 st.set_page_config(page_title="LLM Chatbot", page_icon="💬")  # Set the page title and icon
 st.header("Basic Chatbot")  # Display the chatbot title
 st.write("Allows users to interact with LLMs.")  # Display chatbot description
-st.write('[![View Source Code](https://img.shields.io/badge/view_source_code-gray?logo=github)]()')  # Display a button linking to source code
+st.write('[![View Source Code](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/MuhammadUmerKhan/LangChain-Chatbots/blob/main/pages/%F0%9F%92%AC_BasicChatbot.py)')  # Display a button linking to source code
 
 class BasicChatBot:
     def __init__(self):
