@@ -78,7 +78,8 @@ def configure_llm():
     available_llms = {
         "Mistral": "mistralai/Mistral-7B-Instruct-v0.1",
         "Llama-2": "meta-llama/Llama-2-7b-chat-hf",
-        "Falcon": "tiiuae/falcon-7b-instruct"
+        "Falcon": "tiiuae/falcon-7b-instruct",
+        "TinyLlama": "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
     }
 
     # Sidebar to select LLM
@@ -113,6 +114,16 @@ def print_qa(cls, question, answer):
     log_str = f"\nUsecase: {cls.__name__}\nQuestion: {question}\nAnswer: {answer}\n" + "-" * 50
     logger.info(log_str)  # Log the interaction using Streamlit's logger
 
+
+# @st.cache_resource  # Cache the embedding model to avoid reloading it every time
+# def configure_embedding_model():
+#     """
+#     Configures and caches the embedding model.
+
+#     Returns:
+#         embedding_model (FastEmbedEmbeddings): The loaded embedding model.
+#     """
+#     return FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")  # Load and return the embedding model
 
 @st.cache_resource  # Cache the embedding model to avoid reloading it every time
 def configure_embedding_model():
