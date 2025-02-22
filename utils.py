@@ -5,6 +5,7 @@ from datetime import datetime  # Used for logging timestamps
 from streamlit.logger import get_logger  # Streamlit's built-in logger
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings  # For embedding model
 from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hugging Face API
+from langchain_community.llms import HuggingFaceHub # For accessing LLMs via Hugging Face API
 from dotenv import load_dotenv
 load_dotenv()  # ✅ Load environment variables from .env
 
@@ -69,27 +70,36 @@ def display_msg(msg, author):
 
 def configure_llm():
     """
-    Allows users to select an LLM from available options and configures it accordingly.
-
+    Configure LLM to run on Hugging Face Inference API (Cloud-Based).
+    
     Returns:
         llm (LangChain LLM object): Configured model instance.
     """
-    available_llms = ["Mistral", "Llama-2", "Falcon"]  # List of available LLMs
-    llm_opt = st.sidebar.radio(label="Select LLM", options=available_llms, key="SELECTED_LLM")
+    available_llms = {
+        "Mistral": "mistralai/Mistral-7B-Instruct-v0.1",
+        "Llama-2": "meta-llama/Llama-2-7b-chat-hf",
+        "Falcon": "tiiuae/falcon-7b-instruct"
+    }
 
-    # Load the selected model from Hugging Face
-    if llm_opt == "Mistral":
-        llm = HuggingFaceHub(repo_id="mistralai/Mistral-7B-Instruct-v0.1", huggingfacehub_api_token=hugging_face_api_token)
-    elif llm_opt == "Llama-2":
-        llm = HuggingFaceHub(repo_id="meta-llama/Llama-2-7b-chat-hf", huggingfacehub_api_token=hugging_face_api_token)
-    elif llm_opt == "Falcon":
-        llm = HuggingFaceHub(repo_id="tiiuae/falcon-7b-instruct", huggingfacehub_api_token=hugging_face_api_token)
-    else:
-        st.error("❌ Invalid selection. Please choose a valid LLM.")
-        st.stop()  # Stop execution if an invalid selection is made
+    # Sidebar to select LLM
+    llm_opt = st.sidebar.radio(label="Select LLM", options=list(available_llms.keys()), key="SELECTED_LLM")
+    
+    # Get model ID based on user selection
+    model_id = available_llms[llm_opt]  
 
-    return llm  # Return the configured model instance
+    # ✅ Use Hugging Face Inference API for cloud execution
+    llm = HuggingFaceHub(
+        repo_id=model_id,
+        task="text-generation",  # Hugging Face Inference Task
+        huggingfacehub_api_token=api_token,  # Your API Key
+        model_kwargs={
+            "temperature": 0.7,  # Adjust response randomness
+            "max_length": 512,   # Max response length
+            "top_p": 0.9,        # Nucleus sampling
+        }
+    )
 
+    return llm  # Return configured LLM
 
 def print_qa(cls, question, answer):
     """
