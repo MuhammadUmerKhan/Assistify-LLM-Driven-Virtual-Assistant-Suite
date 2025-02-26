@@ -7,3 +7,4 @@ streamlit
 huggingface_hub
 fastembed
 sentence-transformers
+langchain_groq
