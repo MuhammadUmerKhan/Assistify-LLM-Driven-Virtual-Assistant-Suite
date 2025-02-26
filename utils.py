@@ -16,15 +16,8 @@ load_dotenv()  # ✅ Load environment variables from .env
 logger = get_logger("LangChain-Chatbot")
 
 # ✅ API Key Handling (For Local & Deployed Environments)
-hugging_face_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")  # Local Environment
 hf_api_token = st.secrets.get("HUGGINGFACEHUB_API_TOKEN")  # Streamlit Deployment
 grok_api_key = os.getenv("GROK_API_KEY") # Langchain Grok API key (Generate from: https://console.groq.com/)
-
-# Check if API key is available
-api_token = hugging_face_api_token or hf_api_token  # Use available token
-if not api_token:
-    st.error("❌ Missing Hugging Face API Token! Set `HUGGINGFACEHUB_API_TOKEN` in `.env` (local) or Streamlit Secrets (deployed).")
-    st.stop()  # Stop execution if API token is missing
 
 # ✅ Decorator to enable chat history
 def enable_chat_history(func):
