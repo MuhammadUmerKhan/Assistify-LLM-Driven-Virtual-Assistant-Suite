@@ -6,4 +6,4 @@ langchain_text_splitters
 streamlit
 huggingface_hub
 fastembed
-sentence_transformers
+sentence-transformers
