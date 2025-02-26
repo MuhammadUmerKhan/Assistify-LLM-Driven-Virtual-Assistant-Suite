@@ -4,8 +4,10 @@ import streamlit as st  # Streamlit for building UI
 from datetime import datetime  # Used for logging timestamps
 from streamlit.logger import get_logger  # Streamlit's built-in logger
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings  # For embedding model
-from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hugging Face API
-from langchain_community.llms import HuggingFaceHub # For accessing LLMs via Hugging Face API
+from sentence_transformers import SentenceTransformer  # Embeddings
+from langchain.embeddings import HuggingFaceEmbeddings  # Open-source embeddings
+from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hugging Face A
+from langchain_groq import ChatGroq  # Groq API for LLMPI
 from dotenv import load_dotenv
 load_dotenv()  # ✅ Load environment variables from .env
 
@@ -16,6 +18,7 @@ logger = get_logger("LangChain-Chatbot")
 # ✅ API Key Handling (For Local & Deployed Environments)
 hugging_face_api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")  # Local Environment
 hf_api_token = st.secrets.get("HUGGINGFACEHUB_API_TOKEN")  # Streamlit Deployment
+grok_api_key = os.getenv("GROK_API_KEY") # Langchain Grok API key (Generate from: https://console.groq.com/)
 
 # Check if API key is available
 api_token = hugging_face_api_token or hf_api_token  # Use available token
@@ -76,10 +79,8 @@ def configure_llm():
         llm (LangChain LLM object): Configured model instance.
     """
     available_llms = {
-        "Mistral": "mistralai/Mistral-7B-Instruct-v0.1",
-        "Llama-2": "meta-llama/Llama-2-7b-chat-hf",
-        "Falcon": "tiiuae/falcon-7b-instruct",
-        "TinyLlama": "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+        "Llama (From Meta)": "llama-3.3-70b-versatile",
+        "Gemma (From Google)": "gemma2-9b-it"
     }
 
     # Sidebar to select LLM
@@ -89,15 +90,10 @@ def configure_llm():
     model_id = available_llms[llm_opt]  
 
     # ✅ Use Hugging Face Inference API for cloud execution
-    llm = HuggingFaceHub(
-        repo_id=model_id,
-        task="text-generation",  # Hugging Face Inference Task
-        huggingfacehub_api_token=api_token,  # Your API Key
-        model_kwargs={
-            "temperature": 0.7,  # Adjust response randomness
-            "max_length": 512,   # Max response length
-            "top_p": 0.9,        # Nucleus sampling
-        }
+    llm = ChatGroq(
+        temperature=0.7,
+        groq_api_key=grok_api_key,
+        model_name=model_id
     )
 
     return llm  # Return configured LLM
@@ -114,17 +110,6 @@ def print_qa(cls, question, answer):
     log_str = f"\nUsecase: {cls.__name__}\nQuestion: {question}\nAnswer: {answer}\n" + "-" * 50
     logger.info(log_str)  # Log the interaction using Streamlit's logger
 
-
-# @st.cache_resource  # Cache the embedding model to avoid reloading it every time
-# def configure_embedding_model():
-#     """
-#     Configures and caches the embedding model.
-
-#     Returns:
-#         embedding_model (FastEmbedEmbeddings): The loaded embedding model.
-#     """
-#     return FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")  # Load and return the embedding model
-
 @st.cache_resource  # Cache the embedding model to avoid reloading it every time
 def configure_embedding_model():
     """
@@ -133,7 +118,7 @@ def configure_embedding_model():
     Returns:
         embedding_model (FastEmbedEmbeddings): The loaded embedding model.
     """
-    return FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")  # Load and return the embedding model
+    return SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")  # Load and return the embedding model
 
 
 def sync_st_session():

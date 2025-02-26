@@ -45,13 +45,13 @@ class BasicChatBot:
                 response = result["response"]  # Extract chatbot response
                 
                 # Extract only the AI-generated response (remove unnecessary text)
-                splitted_response = response.split("AI:")[1].strip()  
+                # splitted_response = response.split("AI:")[1].strip()  
 
                 # Store the assistant's response in the session state
                 st.session_state.messages.append({"role": "assistant", "content": response})  
 
                 # Display the cleaned AI response
-                st.write(splitted_response)
+                st.write(response)
 
                 # Log the interaction for debugging or analytics
                 utils.print_qa(BasicChatBot, user_query, response)

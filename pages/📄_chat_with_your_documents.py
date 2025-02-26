@@ -1,161 +1,112 @@
 # Import necessary libraries
-import os  # For file handling and directory creation
-import utils  # Custom utility functions for session handling, model configuration, etc.
-import streamlit as st  # Streamlit framework for interactive web apps
-from streaming import StreamHandler  # Custom streaming handler for real-time response output
+import os
+import streamlit as st
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import DocArrayInMemorySearch
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from sentence_transformers import SentenceTransformer  # ✅ Correct embedding model
+from langchain_groq import ChatGroq  # ✅ Import Groq API for LLM
+from dotenv import load_dotenv
+load_dotenv()
 
-# LangChain components
-from langchain.memory import ConversationBufferMemory  # Stores chat history for contextual conversation
-from langchain.chains import ConversationalRetrievalChain  # Combines retrieval-based document search with conversational AI
-from langchain_community.document_loaders import PyPDFLoader  # Loads PDF files into text format
-from langchain_community.vectorstores import DocArrayInMemorySearch  # In-memory vector store for document retrieval
-from langchain_text_splitters import RecursiveCharacterTextSplitter  # Splits large documents into smaller chunks
+# ✅ Load API key for LLM
+grok_api_key = os.getenv("GROK_API_KEY")
+
+# ✅ Define LLM separately without utils.py
+llm = ChatGroq(
+    temperature=0.7,
+    groq_api_key=grok_api_key,
+    model_name="llama-3.3-70b-versatile"  # Set your model name
+)
 
 # Set up Streamlit page configuration
-st.set_page_config(page_title="ChatPDF", page_icon="📄")
+st.set_page_config(page_title="Chat with Your Documents", page_icon="📄")
 
-# Display chatbot header and description
-st.header('Chat with your documents (Basic RAG)')
-st.write('Has access to custom documents and can respond to user queries by referring to the content within those documents')
-
-# Display a "View Source Code" badge with a GitHub link
-st.write('[![view source code](https://img.shields.io/badge/view_source_code-gray?logo=github)](https://github.com/MuhammadUmerKhan/LangChain-Chatbots/blob/main/pages/%F0%9F%93%84_chat_with_your_documents.py)')
+# Display chatbot header
+st.header("📄 Chat with Your Documents")
+st.write("Upload PDFs and ask questions based on their content.")
 
 class CustomDocChatbot:
-    """A chatbot that enables users to ask questions about uploaded PDF documents using Retrieval-Augmented Generation (RAG)."""
+    """Chatbot for interacting with PDF documents using Retrieval-Augmented Generation (RAG)."""
 
     def __init__(self):
-        """Initialize the chatbot by syncing session state and configuring the models."""
-        utils.sync_st_session()  # Sync Streamlit session state
-        self.llm = utils.configure_llm()  # Configure the Language Model (LLM)
-        self.embedding_model = utils.configure_embedding_model()  # Configure the embedding model for vector storage
+        """Initialize chatbot and load necessary models."""
+        self.llm = llm  # ✅ Directly use LLM without utils.py
+        self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")  # ✅ Load embedding model
 
     def save_file(self, file):
-        """
-        Save the uploaded file to a temporary folder.
+        """Save the uploaded PDF to a temporary folder."""
+        folder = "tmp"
+        os.makedirs(folder, exist_ok=True)
+        file_path = os.path.join(folder, file.name)
+        with open(file_path, "wb") as f:
+            f.write(file.getvalue())
+        return file_path
 
-        Args:
-            file: Uploaded file object.
-
-        Returns:
-            file_path (str): Path to the saved file.
-        """
-        folder = 'tmp'  # Temporary folder to store uploaded PDFs
-        if not os.path.exists(folder):  # Create folder if it doesn't exist
-            os.makedirs(folder)
-
-        file_path = f'./{folder}/{file.name}'  # Construct file path
-        with open(file_path, 'wb') as f:  # Open file in write-binary mode
-            f.write(file.getvalue())  # Write file contents
-        return file_path  # Return file path
-
-    @st.spinner('Analyzing documents..')
     def setup_qa_chain(self, uploaded_files):
-        """
-        Set up the Question-Answering (QA) chain by processing the uploaded documents.
+        """Processes uploaded PDFs and sets up the Q&A retrieval system."""
 
-        Args:
-            uploaded_files: List of uploaded PDF files.
-
-        Returns:
-            qa_chain: ConversationalRetrievalChain for question answering.
-        """
         # Load and process documents
         docs = []
         for file in uploaded_files:
-            file_path = self.save_file(file)  # Save file locally
-            loader = PyPDFLoader(file_path)  # Load the PDF
-            docs.extend(loader.load())  # Extract text from the PDF and store it
+            file_path = self.save_file(file)
+            loader = PyPDFLoader(file_path)
+            docs.extend(loader.load())
 
-        # Split documents into smaller chunks for better retrieval
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,  # Each chunk will have ~1000 characters
-            chunk_overlap=200  # Overlapping region to preserve context between chunks
-        )
-        splits = text_splitter.split_documents(docs)  # Split the extracted documents
+        # Split documents into smaller chunks
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        splits = text_splitter.split_documents(docs)
 
-        # Store document chunks in an in-memory vector database for similarity search
-        vectordb = DocArrayInMemorySearch.from_documents(splits, self.embedding_model)
+        # Extract raw text from chunks
+        text_chunks = [doc.page_content for doc in splits]
 
-        # Define the retriever to search for relevant document chunks
-        retriever = vectordb.as_retriever(
-            search_type='mmr',  # Maximum Marginal Relevance (MMR) search for diversity
-            search_kwargs={'k': 2, 'fetch_k': 4}  # Fetch top 4 results but return 2 most relevant ones
-        )
+        # ✅ Generate embeddings manually
+        text_embeddings = self.embedding_model.encode(text_chunks)
 
-        # Set up memory to store previous conversations for context
-        memory = ConversationBufferMemory(
-            memory_key='chat_history',  # Key to store chat history
-            output_key='answer',  # Key for storing responses
-            return_messages=True  # Keep messages in memory
-        )
+        # ✅ Use `from_texts()` to correctly initialize `DocArrayInMemorySearch`
+        vectordb = DocArrayInMemorySearch.from_texts(text_chunks, embedding=self.embedding_model)
 
-        # Create a Conversational QA chain combining LLM, retriever, and memory
+        # Define retriever
+        retriever = vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4})
+
+        # Set up memory
+        memory = ConversationBufferMemory(memory_key="chat_history", output_key="answer", return_messages=True)
+
+        # Create Q&A Chain
         qa_chain = ConversationalRetrievalChain.from_llm(
-            llm=self.llm,  # Use the configured LLM
-            retriever=retriever,  # Use the retriever to find relevant document chunks
-            memory=memory,  # Include conversation history
-            return_source_documents=True,  # Return source documents for reference
-            verbose=False  # Suppress unnecessary logs
+            llm=self.llm,
+            retriever=retriever,
+            memory=memory,
+            return_source_documents=True,
+            verbose=False
         )
-        return qa_chain  # Return the QA chain instance
+        return qa_chain
 
-    @utils.enable_chat_history
     def main(self):
-        """
-        Main function to handle file uploads, user queries, and chatbot responses.
-        """
+        """Main function to handle file uploads and chatbot interactions."""
+        uploaded_files = st.sidebar.file_uploader("📤 Upload PDF Files", type=["pdf"], accept_multiple_files=True)
 
-        # Sidebar for file uploads
-        uploaded_files = st.sidebar.file_uploader(
-            label='Upload PDF files',
-            type=['pdf'],  # Restrict to PDF files only
-            accept_multiple_files=True  # Allow multiple file uploads
-        )
-
-        # Stop execution if no files are uploaded
         if not uploaded_files:
-            st.error("Please upload PDF documents to continue!")  # Display error message
-            st.stop()  # Stop further execution
+            st.error("Please upload PDF documents to continue!")
+            st.stop()
 
-        # Capture user query input
-        user_query = st.chat_input(placeholder="Ask me anything!")
+        user_query = st.chat_input(placeholder="🔎 Ask something about your document!")
 
-        if uploaded_files and user_query:  # Proceed if user uploaded files and entered a query
-            qa_chain = self.setup_qa_chain(uploaded_files)  # Set up the QA chain
+        if uploaded_files and user_query:
+            qa_chain = self.setup_qa_chain(uploaded_files)
 
-            utils.display_msg(user_query, 'user')  # Display user's query
+            st.chat_message("user").write(user_query)  # Display user query
 
-            # Create a chat message container for the assistant's response
             with st.chat_message("assistant"):
-                st_cb = StreamHandler(st.empty())  # Initialize a streaming response handler
-
-                # Generate a response from the chatbot based on user query
-                result = qa_chain.invoke(
-                    {"question": user_query},  # Pass user query to the QA system
-                    {"callbacks": [st_cb]}  # Use callback for streaming response
-                )
-
-                # Extract chatbot response
+                result = qa_chain.invoke({"question": user_query})  # Generate response
                 response = result["answer"]
 
-                # Append the chatbot's response to session history
-                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.write(response)  # Show AI response
+                st.session_state.messages.append({"role": "assistant", "content": response})  # Store response
 
-                # Log the conversation for debugging or record-keeping
-                utils.print_qa(CustomDocChatbot, user_query, response)
-
-                # Display references for the extracted response
-                for idx, doc in enumerate(result['source_documents'], 1):
-                    filename = os.path.basename(doc.metadata['source'])  # Extract filename from metadata
-                    page_num = doc.metadata['page']  # Extract page number from metadata
-                    ref_title = f":blue[Reference {idx}: *{filename} - page.{page_num}*]"  # Format reference title
-
-                    # Display reference content in a popover
-                    with st.popover(ref_title):
-                        st.caption(doc.page_content)  # Show document content snippet
-
-# Run the chatbot when the script is executed
+# Run the chatbot
 if __name__ == "__main__":
     obj = CustomDocChatbot()
     obj.main()
