@@ -77,8 +77,8 @@ def configure_llm():
         llm (LangChain LLM object): Configured model instance.
     """
     available_llms = {
-        "Llama (From Meta)": "llama-3.3-70b-versatile",
-        "Gemma (From Google)": "gemma2-9b-it"
+        "Llama": "llama-3.3-70b-versatile",
+        "Gemma": "gemma2-9b-it"
     }
 
     # Sidebar to select LLM
