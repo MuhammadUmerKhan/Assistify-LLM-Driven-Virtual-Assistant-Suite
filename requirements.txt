@@ -9,3 +9,4 @@ fastembed
 sentence-transformers
 langchain_groq
 pypdf
+faiss-cpu 
