@@ -14,7 +14,7 @@ from langchain.schema import Document  # ✅ Needed for FAISS storage
 st.set_page_config(page_title="Chat with Your Documents", page_icon="📄")
 
 # Display chatbot header
-st.header("📄 Chat with Your Documents")
+st.header("📄 DocuMind AI: Smart PDF Question Answering System")
 st.write("Upload PDFs and ask questions based on their content.")
 
 class CustomDocChatbot:
