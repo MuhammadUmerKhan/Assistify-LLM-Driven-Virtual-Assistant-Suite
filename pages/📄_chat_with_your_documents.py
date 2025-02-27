@@ -1,25 +1,14 @@
 # Import necessary libraries
 import os
+import numpy as np
 import streamlit as st
+import utils  # ✅ Now using utility functions
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.vectorstores import DocArrayInMemorySearch
+from langchain_community.vectorstores import FAISS  # ✅ Use FAISS instead of DocArrayInMemorySearch
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from sentence_transformers import SentenceTransformer  # ✅ Correct embedding model
-from langchain_groq import ChatGroq  # ✅ Import Groq API for LLM
-from dotenv import load_dotenv
-load_dotenv()
-
-# ✅ Load API key for LLM
-grok_api_key = os.getenv("GROK_API_KEY")
-
-# ✅ Define LLM separately without utils.py
-llm = ChatGroq(
-    temperature=0.7,
-    groq_api_key=grok_api_key,
-    model_name="llama-3.3-70b-versatile"  # Set your model name
-)
+from langchain.schema import Document  # ✅ Needed for FAISS storage
 
 # Set up Streamlit page configuration
 st.set_page_config(page_title="Chat with Your Documents", page_icon="📄")
@@ -29,12 +18,14 @@ st.header("📄 Chat with Your Documents")
 st.write("Upload PDFs and ask questions based on their content.")
 
 class CustomDocChatbot:
-    """Chatbot for interacting with PDF documents using Retrieval-Augmented Generation (RAG)."""
+    """Chatbot for interacting with PDF documents using Retrieval-Augmented Generation (RAG) and FAISS."""
 
     def __init__(self):
         """Initialize chatbot and load necessary models."""
-        self.llm = llm  # ✅ Directly use LLM without utils.py
-        self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")  # ✅ Load embedding model
+        utils.sync_st_session()  # ✅ Ensure chat history is synchronized
+        self.llm = utils.configure_llm()  # ✅ Load LLM from utils
+        self.embedding_model = utils.configure_embedding_model()  # ✅ Load SentenceTransformer from utils
+        self.faiss_embeddings = utils.configure_vector_embeddings()  # ✅ Load FAISS-compatible embeddings
 
     def save_file(self, file):
         """Save the uploaded PDF to a temporary folder."""
@@ -46,7 +37,7 @@ class CustomDocChatbot:
         return file_path
 
     def setup_qa_chain(self, uploaded_files):
-        """Processes uploaded PDFs and sets up the Q&A retrieval system."""
+        """Processes uploaded PDFs and sets up the Q&A retrieval system with FAISS."""
 
         # Load and process documents
         docs = []
@@ -60,16 +51,20 @@ class CustomDocChatbot:
         splits = text_splitter.split_documents(docs)
 
         # Extract raw text from chunks
-        text_chunks = [doc.page_content for doc in splits]
+        texts = [doc.page_content for doc in splits]
 
         # ✅ Generate embeddings manually
-        text_embeddings = self.embedding_model.encode(text_chunks)
+        text_embeddings = self.embedding_model.encode(texts)
+        text_embeddings = np.array(text_embeddings)  # Convert to numpy array
 
-        # ✅ Use `from_texts()` to correctly initialize `DocArrayInMemorySearch`
-        vectordb = DocArrayInMemorySearch.from_texts(text_chunks, embedding=self.embedding_model)
+        # ✅ Convert texts into LangChain Document objects for FAISS
+        faiss_docs = [Document(page_content=text) for text in texts]
+
+        # ✅ Initialize FAISS vector store
+        vector_db = FAISS.from_documents(faiss_docs, self.faiss_embeddings)
 
         # Define retriever
-        retriever = vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4})
+        retriever = vector_db.as_retriever(search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4})
 
         # Set up memory
         memory = ConversationBufferMemory(memory_key="chat_history", output_key="answer", return_messages=True)
@@ -84,6 +79,7 @@ class CustomDocChatbot:
         )
         return qa_chain
 
+    @utils.enable_chat_history  # ✅ Enable chat history to display previous messages
     def main(self):
         """Main function to handle file uploads and chatbot interactions."""
         uploaded_files = st.sidebar.file_uploader("📤 Upload PDF Files", type=["pdf"], accept_multiple_files=True)
@@ -97,14 +93,16 @@ class CustomDocChatbot:
         if uploaded_files and user_query:
             qa_chain = self.setup_qa_chain(uploaded_files)
 
-            st.chat_message("user").write(user_query)  # Display user query
+            utils.display_msg(user_query, "user")  # ✅ Store and display user's message
 
             with st.chat_message("assistant"):
                 result = qa_chain.invoke({"question": user_query})  # Generate response
                 response = result["answer"]
 
                 st.write(response)  # Show AI response
-                st.session_state.messages.append({"role": "assistant", "content": response})  # Store response
+                st.session_state.messages.append({"role": "assistant", "content": response})  # ✅ Store assistant response
+
+                utils.print_qa(CustomDocChatbot, user_query, response)  # ✅ Log interaction for debugging
 
 # Run the chatbot
 if __name__ == "__main__":

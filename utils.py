@@ -118,6 +118,15 @@ def configure_embedding_model():
     """
     return SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")  # Load and return the embedding model
 
+@st.cache_resource
+def configure_vector_embeddings():
+    """
+    Configures and caches the vector embeddings for Groq API.
+
+    Returns:
+        vector_embeddings (HuggingFaceEmbeddings): The loaded vector embeddings.
+    """
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")  # Load and return the vector embeddings
 
 def sync_st_session():
     """
