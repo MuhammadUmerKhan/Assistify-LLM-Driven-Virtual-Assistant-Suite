@@ -4,7 +4,7 @@ import streamlit as st  # Streamlit for building the chatbot UI
 from streaming import StreamHandler  # Custom streaming handler for real-time response updates
 from langchain.chains import ConversationChain  # Conversation model from LangChain for handling chat history
 from langchain.prompts import PromptTemplate  # LangChain's prompt template for structuring conversation inputs
-
+import re   
 # Set up the Streamlit UI
 st.set_page_config(page_title="LLM Chatbot", page_icon="💬")  # Set the page title and icon
 st.header("Basic Chatbot")  # Display the chatbot title
@@ -51,7 +51,13 @@ class BasicChatBot:
                 st.session_state.messages.append({"role": "assistant", "content": response})  
 
                 # Display the cleaned AI response
-                st.write(response)
+                def clean_response(response):
+                    return re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL).strip()
+                try:
+                    response = clean_response(response)
+                    st.write(response)
+                except Exception:
+                    st.write(response)
 
                 # Log the interaction for debugging or analytics
                 utils.print_qa(BasicChatBot, user_query, response)

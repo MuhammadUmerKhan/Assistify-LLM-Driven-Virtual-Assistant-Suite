@@ -78,7 +78,12 @@ def configure_llm():
     """
     available_llms = {
         "Llama": "llama-3.3-70b-versatile",
-        "Gemma": "gemma2-9b-it"
+        "Gemma": "gemma2-9b-it",
+        "Qwen 2.5 Coder": "qwen-2.5-coder-32b",
+        "Qwen 2.5": "qwen-2.5-32b",
+        "DeepSeek R1 32b": "deepseek-r1-distill-qwen-32b",
+        "DeepSeek R1 70b": "deepseek-r1-distill-llama-70b",
+        "DeepSeek Qwen": "deepseek-r1-distill-qwen-32b"
     }
 
     # Sidebar to select LLM
@@ -89,10 +94,12 @@ def configure_llm():
 
     # ✅ Use Hugging Face Inference API for cloud execution
     llm = ChatGroq(
-        temperature=0.7,
-        groq_api_key=grok_api_key,
-        model_name=model_id
-    )
+    temperature=0.3,
+    groq_api_key=grok_api_key,
+    model_name=model_id,
+    # system_message="You are an AI assistant. Respond directly and concisely. Do not explain your reasoning unless explicitly asked."
+)
+
 
     return llm  # Return configured LLM
 
