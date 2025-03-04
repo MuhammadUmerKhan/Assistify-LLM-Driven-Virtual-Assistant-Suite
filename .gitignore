@@ -1,4 +1,12 @@
 .env
 secrets.toml
 tmp
-FoodBot
+bot
+database
+order
+tools
+config.py
+foodbot.log
+main.py
+__pycache__
+structure.graphql
