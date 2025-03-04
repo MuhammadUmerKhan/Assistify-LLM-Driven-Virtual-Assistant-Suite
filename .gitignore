@@ -9,4 +9,3 @@ config.py
 foodbot.log
 main.py
 __pycache__
-structure.graphql
