@@ -76,7 +76,7 @@ This project consists of three AI-powered chatbots designed using LangChain and 
 - Implement more advanced memory for enhanced context retention.
 
 ## Live Demo:
-- [Chect out here](https://langhain-chatbots.streamlit.app/)
+- [Chect out here](https://langchain-chatbots.streamlit.app/?embed_options=dark_theme)
 
 ## Conclusion
 This chatbot suite demonstrates different levels of conversational AI, from simple Q&A to context-aware interactions and document-based responses. Feel free to explore and modify the project for further enhancements!
