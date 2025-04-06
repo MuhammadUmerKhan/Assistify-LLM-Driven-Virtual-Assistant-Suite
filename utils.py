@@ -77,13 +77,15 @@ def configure_llm():
         llm (LangChain LLM object): Configured model instance.
     """
     available_llms = {
-        "Llama": "llama-3.3-70b-versatile",
+        "Llama 3": "llama-3.3-70b-versatile",
         "Gemma": "gemma2-9b-it",
         "Qwen 2.5 Coder": "qwen-2.5-coder-32b",
         "Qwen 2.5": "qwen-2.5-32b",
         "DeepSeek R1 32b": "deepseek-r1-distill-qwen-32b",
         "DeepSeek R1 70b": "deepseek-r1-distill-llama-70b",
-        "DeepSeek Qwen": "deepseek-r1-distill-qwen-32b"
+        "DeepSeek Qwen": "deepseek-r1-distill-qwen-32b",
+        "Llama 4 Maverick": "meta-llama/llama-4-maverick-17b-128e-instruct",
+        "Llama 4 Scout":  "meta-llama/llama-4-scout-17b-16e-instruct"
     }
 
     # Sidebar to select LLM
