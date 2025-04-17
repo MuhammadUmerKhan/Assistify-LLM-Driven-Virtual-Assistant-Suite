@@ -79,8 +79,7 @@ def configure_llm():
     available_llms = {
         "Llama 3": "llama-3.3-70b-versatile",
         "Gemma": "gemma2-9b-it",
-        "Qwen 2.5 Coder": "qwen-2.5-coder-32b",
-        "Qwen 2.5": "qwen-2.5-32b",
+        "Qwen": "qwen-qwq-32b",
         "DeepSeek R1 32b": "deepseek-r1-distill-qwen-32b",
         "DeepSeek R1 70b": "deepseek-r1-distill-llama-70b",
         "DeepSeek Qwen": "deepseek-r1-distill-qwen-32b",
