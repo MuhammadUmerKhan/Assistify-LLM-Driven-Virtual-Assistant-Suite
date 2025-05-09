@@ -3,11 +3,10 @@ import os  # Used for environment variable access
 import streamlit as st  # Streamlit for building UI
 from datetime import datetime  # Used for logging timestamps
 from streamlit.logger import get_logger  # Streamlit's built-in logger
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings  # For embedding model
 from sentence_transformers import SentenceTransformer  # Embeddings
 from langchain.embeddings import HuggingFaceEmbeddings  # Open-source embeddings
-from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hugging Face A
 from langchain_groq import ChatGroq  # Groq API for LLMPI
+from langchain_openai import ChatOpenAI  # OpenAI API for LLM
 from dotenv import load_dotenv
 load_dotenv()  # ✅ Load environment variables from .env
 
@@ -17,6 +16,7 @@ logger = get_logger("LangChain-Chatbot")
 
 # ✅ API Key Handling (For Local & Deployed Environments)
 grok_api_key = os.getenv("GROK_API_KEY") # Langchain Grok API key (Generate from: https://console.groq.com/)
+openai_api_key = os.getenv("OPEN_AI_API_KEY")  # OpenAI API key
 
 # Check if API key is available
 api_token = grok_api_key
@@ -82,23 +82,32 @@ def configure_llm():
         "Gemma": "gemma2-9b-it",
         "Qwen": "qwen-qwq-32b",
         "DeepSeek": "deepseek-r1-distill-llama-70b",
-        "Llama 4": "meta-llama/llama-4-scout-17b-16e-instruct"
+        "Llama 4": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "GPT-4": "gpt-4"
     }
     
     # Sidebar to select LLM
     llm_opt = st.sidebar.radio(label="Select LLM", options=list(available_llms.keys()), key="SELECTED_LLM")
     
-    # Get model ID based on user selection
-    model_id = available_llms[llm_opt]  
+    if llm_opt=="GPT-4":
+        openai_key = st.sidebar.text_input("Enter OpenAI API Key:", type="password", key="OPENAI_API_KEY_INPUT")
+        if not openai_key:
+            st.error("❌ Please enter a valid OpenAI API Key for GPT-4!")
+            st.stop() # Stop execution if no API key is provided
 
-    # ✅ Use Hugging Face Inference API for cloud execution
-    llm = ChatGroq(
-    temperature=0.3,
-    groq_api_key=grok_api_key,
-    model_name=model_id,
-    # system_message="You are an AI assistant. Respond directly and concisely. Do not explain your reasoning unless explicitly asked."
-)
+        # Configure OpenAI LLM
+        llm = ChatOpenAI(model="gpt-4", api_key=openai_key, temperature=.3)
+    
+    else:
+        # Get model ID based on user selection
+        model_id = available_llms[llm_opt]  
 
+        # ✅ Use Hugging Face Inference API for cloud execution
+        llm = ChatGroq(
+        temperature=0.3,
+        groq_api_key=grok_api_key,
+        model_name=model_id,
+        )
 
     return llm  # Return configured LLM
 
