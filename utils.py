@@ -3,9 +3,11 @@ import os  # Used for environment variable access
 import streamlit as st  # Streamlit for building UI
 from datetime import datetime  # Used for logging timestamps
 from streamlit.logger import get_logger  # Streamlit's built-in logger
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings  # For embedding model
 from sentence_transformers import SentenceTransformer  # Embeddings
 from langchain.embeddings import HuggingFaceEmbeddings  # Open-source embeddings
-from langchain_groq import ChatGroq  # Groq API for LLMP
+from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hugging Face A
+from langchain_groq import ChatGroq  # Groq API for LLM
 from langchain_openai import ChatOpenAI  # OpenAI API for LLM
 from dotenv import load_dotenv
 load_dotenv()  # ✅ Load environment variables from .env
@@ -86,37 +88,31 @@ def configure_llm():
     }
     
     # Sidebar to select LLM
-    llm_opt = st.sidebar.radio(label="Select LLM", options=list(available_llms.keys()), key="SELECTED_LLM")
+    llm_opt = st.sidebar.selectbox("🤖 **Select an LLM Model**", list(available_llms.keys()))
     
     # Get model ID based on user selection
-    model_id = available_llms[llm_opt]
-    
+    model_id = available_llms[llm_opt]  
+
     if model_id=="gpt-4":
+    # If GPT-4 is selected, prompt for OpenAI API key
         openai_key = st.sidebar.text_input("Enter OpenAI API Key", type="password", key="OPENAI_API_KEY_INPUT")
         if not openai_key:
             st.error("❌ Please enter a valid OpenAI API Key for GPT-4!")
             st.stop()  # Stop execution if no API key is provided
-    
-        try:
-            print(f"✅ Using {str("gpt-4").capitalize()}")
-            # Configure OpenAI LLM
-            llm = ChatOpenAI(
-                model_name="gpt-4",
-                api_key=openai_key,
-                temperature=0.3
-            )
-        except Exception as e:
-            st.warning("⚠️ Invalid OpenAI API Key! Please check your key or get a new one at https://platform.openai.com/account/api-keys.")
-            st.stop()  # Stop execution if the key is invalid
-        
+        # Configure OpenAI LLM
+        llm = ChatOpenAI(
+            model_name="gpt-4",
+            api_key=openai_key,
+            temperature=0.3
+        )
     else:
-        print(f"✅ Using {str(model_id).capitalize()}")
         # ✅ Use Hugging Face Inference API for cloud execution
         llm = ChatGroq(
-        temperature=0.3,
-        groq_api_key=grok_api_key,
-        model_name=model_id,
-    )
+            temperature=0.3,
+            groq_api_key=grok_api_key,
+            model_name=model_id,
+        )
+
 
     return llm  # Return configured LLM
 
