@@ -96,14 +96,18 @@ def configure_llm():
         if not openai_key:
             st.error("❌ Please enter a valid OpenAI API Key for GPT-4!")
             st.stop()  # Stop execution if no API key is provided
-        
-        print(f"✅ Using {str("gpt-4").capitalize()}")
-        # Configure OpenAI LLM
-        llm = ChatOpenAI(
-            model_name="gpt-4",
-            api_key=openai_key,
-            temperature=0.3
-        )
+    
+        try:
+            print(f"✅ Using {str("gpt-4").capitalize()}")
+            # Configure OpenAI LLM
+            llm = ChatOpenAI(
+                model_name="gpt-4",
+                api_key=openai_key,
+                temperature=0.3
+            )
+        except Exception as e:
+            st.warning("⚠️ Invalid OpenAI API Key! Please check your key or get a new one at https://platform.openai.com/account/api-keys.")
+            st.stop()  # Stop execution if the key is invalid
         
     else:
         print(f"✅ Using {str(model_id).capitalize()}")
