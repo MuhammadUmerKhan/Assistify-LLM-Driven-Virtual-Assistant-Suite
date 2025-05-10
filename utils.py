@@ -5,7 +5,7 @@ from datetime import datetime  # Used for logging timestamps
 from streamlit.logger import get_logger  # Streamlit's built-in logger
 from sentence_transformers import SentenceTransformer  # Embeddings
 from langchain.embeddings import HuggingFaceEmbeddings  # Open-source embeddings
-from langchain_groq import ChatGroq  # Groq API for LLMPI
+from langchain_groq import ChatGroq  # Groq API for LLMP
 from langchain_openai import ChatOpenAI  # OpenAI API for LLM
 from dotenv import load_dotenv
 load_dotenv()  # ✅ Load environment variables from .env
@@ -16,7 +16,6 @@ logger = get_logger("LangChain-Chatbot")
 
 # ✅ API Key Handling (For Local & Deployed Environments)
 grok_api_key = os.getenv("GROK_API_KEY") # Langchain Grok API key (Generate from: https://console.groq.com/)
-openai_api_key = os.getenv("OPEN_AI_API_KEY")  # OpenAI API key
 
 # Check if API key is available
 api_token = grok_api_key
@@ -89,25 +88,29 @@ def configure_llm():
     # Sidebar to select LLM
     llm_opt = st.sidebar.radio(label="Select LLM", options=list(available_llms.keys()), key="SELECTED_LLM")
     
-    if llm_opt=="GPT-4":
-        openai_key = st.sidebar.text_input("Enter OpenAI API Key:", type="password", key="OPENAI_API_KEY_INPUT")
+    # Get model ID based on user selection
+    model_id = available_llms[llm_opt]
+    
+    if model_id=="gpt-4":
+        openai_key = st.sidebar.text_input("Enter OpenAI API Key", type="password", key="OPENAI_API_KEY_INPUT")
         if not openai_key:
             st.error("❌ Please enter a valid OpenAI API Key for GPT-4!")
-            st.stop() # Stop execution if no API key is provided
-
+            st.stop()  # Stop execution if no API key is provided
+        
         # Configure OpenAI LLM
-        llm = ChatOpenAI(model="gpt-4", api_key=openai_key, temperature=.3)
-    
+        llm = ChatOpenAI(
+            model_name="gpt-4",
+            api_key=openai_key,
+            temperature=0.3
+        )
+        
     else:
-        # Get model ID based on user selection
-        model_id = available_llms[llm_opt]  
-
         # ✅ Use Hugging Face Inference API for cloud execution
         llm = ChatGroq(
         temperature=0.3,
         groq_api_key=grok_api_key,
         model_name=model_id,
-        )
+    )
 
     return llm  # Return configured LLM
 
