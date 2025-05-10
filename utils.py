@@ -3,21 +3,18 @@ import os  # Used for environment variable access
 import streamlit as st  # Streamlit for building UI
 from datetime import datetime  # Used for logging timestamps
 from streamlit.logger import get_logger  # Streamlit's built-in logger
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings  # For embedding model
 from sentence_transformers import SentenceTransformer  # Embeddings
 from langchain.embeddings import HuggingFaceEmbeddings  # Open-source embeddings
-from langchain_community.llms import HuggingFaceHub  # For accessing LLMs via Hugging Face A
 from langchain_groq import ChatGroq  # Groq API for LLM
 from langchain_openai import ChatOpenAI  # OpenAI API for LLM
 from dotenv import load_dotenv
 load_dotenv()  # ✅ Load environment variables from .env
 
-
 # Initialize logger for tracking interactions and errors
 logger = get_logger("LangChain-Chatbot")
 
 # ✅ API Key Handling (For Local & Deployed Environments)
-grok_api_key = os.getenv("GROK_API_KEY") # Langchain Grok API key (Generate from: https://console.groq.com/)
+grok_api_key = os.getenv("GROK_API_KEY")  # Langchain Groq API key (Generate from: https://console.groq.com/)
 
 # Check if API key is available
 api_token = grok_api_key
@@ -57,7 +54,6 @@ def enable_chat_history(func):
 
     return execute
 
-
 def display_msg(msg, author):
     """
     Displays a chat message in the UI and appends it to session history.
@@ -69,52 +65,44 @@ def display_msg(msg, author):
     st.session_state.messages.append({"role": author, "content": msg})  # Store message in session
     st.chat_message(author).write(msg)  # Display message in Streamlit UI
 
-
 def configure_llm():
     """
-    Configure LLM to run on Hugging Face Inference API (Cloud-Based).
-    
-    Returns:
-        llm (LangChain LLM object): Configured model instance.
+        Configure LLM to run on Hugging Face Inference API (Cloud-Based).
+        
+        Returns:
+            llm (LangChain LLM object): Configured model instance.
     """
     
     available_llms = {
+        "Qwen": "qwen-qwq-32b",
         "Llama 3": "llama-3.3-70b-versatile",
         "Gemma": "gemma2-9b-it",
-        "Qwen": "qwen-qwq-32b",
         "DeepSeek": "deepseek-r1-distill-llama-70b",
         "Llama 4": "meta-llama/llama-4-scout-17b-16e-instruct",
         "GPT-4": "gpt-4"
     }
-    
-    # Sidebar to select LLM
-    llm_opt = st.sidebar.selectbox("🤖 **Select an LLM Model**", list(available_llms.keys()))
-    
-    # Get model ID based on user selection
-    model_id = available_llms[llm_opt]  
 
-    if model_id=="gpt-4":
-    # If GPT-4 is selected, prompt for OpenAI API key
-        openai_key = st.sidebar.text_input("Enter OpenAI API Key", type="password", key="OPENAI_API_KEY_INPUT")
+    # Sidebar dropdown
+    llm_opt = st.sidebar.selectbox("🤖 **Select an LLM Model**", list(available_llms.keys()), key="llm_select")
+    model_id = available_llms[llm_opt]
+
+    if model_id == "gpt-4":
+        openai_key = st.sidebar.text_input("🔐 Enter OpenAI API Key", type="password", key="OPENAI_API_KEY_INPUT")
         if not openai_key:
-            st.error("❌ Please enter a valid OpenAI API Key for GPT-4!")
-            st.stop()  # Stop execution if no API key is provided
-        # Configure OpenAI LLM
+            st.error("❌ Please enter your OpenAI API Key!")
+            st.stop()
         llm = ChatOpenAI(
             model_name="gpt-4",
             api_key=openai_key,
-            temperature=0.3
+            temperature=0.3,
+            metadata={"model_name": llm_opt}
         )
     else:
-        # ✅ Use Hugging Face Inference API for cloud execution
-        llm = ChatGroq(
-            temperature=0.3,
-            groq_api_key=grok_api_key,
-            model_name=model_id,
-        )
+        llm = ChatGroq(model_name=model_id, temperature=0.3, groq_api_key=grok_api_key)
 
-
-    return llm  # Return configured LLM
+    # Display active model
+    st.sidebar.success(f"✅ Active Model: {llm_opt}")
+    return llm
 
 def print_qa(cls, question, answer):
     """
