@@ -97,6 +97,7 @@ def configure_llm():
             st.error("❌ Please enter a valid OpenAI API Key for GPT-4!")
             st.stop()  # Stop execution if no API key is provided
         
+        print(f"✅ Using {str("gpt-4").capitalize()}")
         # Configure OpenAI LLM
         llm = ChatOpenAI(
             model_name="gpt-4",
@@ -105,6 +106,7 @@ def configure_llm():
         )
         
     else:
+        print(f"✅ Using {str(model_id).capitalize()}")
         # ✅ Use Hugging Face Inference API for cloud execution
         llm = ChatGroq(
         temperature=0.3,
