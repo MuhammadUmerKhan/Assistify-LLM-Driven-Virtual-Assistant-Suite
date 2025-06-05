@@ -11,3 +11,4 @@ langchain_groq
 pypdf
 faiss-cpu 
 langchain-openai
+streamlit-autorefresh
