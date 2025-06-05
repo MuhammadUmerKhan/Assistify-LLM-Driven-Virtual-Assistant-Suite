@@ -65,7 +65,7 @@ class ContextChatbot:
                 )
                 
                 # Extract the chatbot's response from the result
-                response = result["response"]
+                response = utils.remove_think_tags(result["response"])
 
                 # Append the chatbot's response to session history (removing "AI:" prefix)
                 st.session_state.messages.append({"role": "assistant", "content": response.split("AI:")[-1].strip()})
