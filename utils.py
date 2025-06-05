@@ -8,6 +8,7 @@ from langchain.embeddings import HuggingFaceEmbeddings  # Open-source embeddings
 from langchain_groq import ChatGroq  # Groq API for LLM
 from langchain_openai import ChatOpenAI  # OpenAI API for LLM
 from dotenv import load_dotenv
+from streamlit_autorefresh import st_autorefresh
 load_dotenv()  # ✅ Load environment variables from .env
 
 # Initialize logger for tracking interactions and errors
@@ -67,12 +68,11 @@ def display_msg(msg, author):
 
 def configure_llm():
     """
-        Configure LLM to run on Hugging Face Inference API (Cloud-Based).
-        
-        Returns:
-            llm (LangChain LLM object): Configured model instance.
-    """
+    Configure LLM to run on Hugging Face Inference API (Cloud-Based).
     
+    Returns:
+        llm (LangChain LLM object): Configured model instance.
+    """
     available_llms = {
         "Qwen": "qwen-qwq-32b",
         "Llama 3": "llama-3.3-70b-versatile",
@@ -84,6 +84,14 @@ def configure_llm():
 
     # Sidebar dropdown
     llm_opt = st.sidebar.selectbox("🤖 **Select an LLM Model**", list(available_llms.keys()), key="llm_select")
+
+    # Check for model change
+    if "previous_llm" not in st.session_state:
+        st.session_state["previous_llm"] = llm_opt  # Initialize previous model
+    elif st.session_state["previous_llm"] != llm_opt:
+        st_autorefresh()  # Trigger a single refresh on model change
+        st.session_state["previous_llm"] = llm_opt  # Update previous model
+
     model_id = available_llms[llm_opt]
 
     if model_id == "gpt-4":
@@ -142,3 +150,13 @@ def sync_st_session():
     """
     for k, v in st.session_state.items():
         st.session_state[k] = v  # Sync all session state values
+
+def remove_think_tags(text):
+    start_tag = "<think>"
+    end_tag = "</think>"
+    while start_tag in text and end_tag in text:
+        start_index = text.find(start_tag)
+        end_index = text.find(end_tag) + len(end_tag)
+        if start_index < end_index:
+            text = text[:start_index] + text[end_index:]
+    return text
