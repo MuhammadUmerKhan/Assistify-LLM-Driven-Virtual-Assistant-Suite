@@ -26,7 +26,7 @@ class CustomDocChatbot:
         self.llm = utils.configure_llm()  # ✅ Load LLM from utils
         self.embedding_model = utils.configure_embedding_model()  # ✅ Load SentenceTransformer from utils
         self.faiss_embeddings = utils.configure_vector_embeddings()  # ✅ Load FAISS-compatible embeddings
-
+    
     def save_file(self, file):
         """Save the uploaded PDF to a temporary folder."""
         folder = "tmp"
@@ -97,7 +97,7 @@ class CustomDocChatbot:
 
             with st.chat_message("assistant"):
                 result = qa_chain.invoke({"question": user_query})  # Generate response
-                response = result["answer"]
+                response = utils.remove_think_tags(result["answer"])
 
                 st.write(response)  # Show AI response
                 st.session_state.messages.append({"role": "assistant", "content": response})  # ✅ Store assistant response
