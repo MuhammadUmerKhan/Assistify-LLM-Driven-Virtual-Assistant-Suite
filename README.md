@@ -60,7 +60,48 @@ Welcome to this exciting project featuring three AI-powered chatbots built with 
   ```bash
   streamlit run 📄_chat_with_your_documents.py
   ```
+## 🐳 **Dockerization & Deployment**
 
+You can easily run this project using Docker and share or deploy it from Docker Hub.
+
+### ✅ **Build the Docker Image**
+
+Make sure your `Dockerfile` is correctly set up. Then run:
+
+```bash
+docker build -t muhammadumerkhan/chatbot-suitecase .
+```
+
+### 🚀 **Run the Docker Container**
+
+```bash
+docker run -p 8501:8501 muhammadumerkhan/chatbot-suitecase
+```
+
+> This will launch the Streamlit/ FastAPI interface on `http://localhost:8501` depending on your app entrypoint.
+
+### 📤 **Push to Docker Hub**
+
+First, log in to Docker:
+
+```bash
+docker login
+```
+
+Then push your image:
+
+```bash
+docker push muhammadumerkhan/chatbot-suitecase
+```
+
+### 📥 **Pull & Run from Docker Hub**
+
+Anyone can pull and run the app using:
+
+```bash
+docker pull muhammadumerkhan/chatbot-suitecase
+docker run -p 8501:8501 muhammadumerkhan/chatbot-suitecase
+```
 ## 🎤 Usage
 - Launch the Streamlit app in your browser.
 - Start chatting by typing your messages! 💬
