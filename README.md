@@ -1,4 +1,4 @@
-# 🚀 LLM-Driven Intelligent Virtual Assistants
+# 🚀 Assistify: LLM-Driven Virtual Assistant Suite
 
 ## 🌟 Introduction
 Welcome to this exciting project featuring three AI-powered chatbots built with **LangChain** and a variety of advanced language models! These chatbots cater to diverse needs, ranging from simple conversations to context-aware interactions and document-based queries. Here's a quick overview:
