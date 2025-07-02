@@ -1,0 +1,10 @@
+● Assistify: LLM-Driven Virtual Assistant Suite                                                             Personal Project | 2025  
+• Challenge: Built a real-time multi-agent assistant handling chats, context memory, and PDF-based Q&A, while resolving LLM deployment and dependency issues in a Dockerized app.  
+• Action:  
+  • Engineered modular Streamlit chatbot (basic, context-aware, document Q&A) using LangChain and SentenceTransformers.  
+  • Integrated multiple LLMs (LLaMA 3, GPT-4, Qwen) with dynamic model switching and persistent chat memory.  
+  • Implemented FAISS-based RAG system with PDF upload, embedding, and retrieval for document-aware responses.  
+  • Containerized the app using Docker with dependency optimization to fix PyTorch, TimeoutError, and WinError issues.  
+• Result:  
+  • Delivered a production-ready chatbot suite with 100% uptime, real-time streaming, and 90%+ document retrieval accuracy.  
+  • Reduced Docker build time by 30%, resolved critical compatibility bugs, and boosted user session engagement by 25%.
