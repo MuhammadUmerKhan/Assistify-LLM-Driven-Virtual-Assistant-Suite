@@ -15,7 +15,7 @@ load_dotenv()  # ✅ Load environment variables from .env
 logger = get_logger("LangChain-Chatbot")
 
 # ✅ API Key Handling (For Local & Deployed Environments)
-grok_api_key = os.getenv("GROK_API_KEY")  # Langchain Groq API key (Generate from: https://console.groq.com/)
+grok_api_key = os.getenv("GROQ_API_KEY")  # Langchain Groq API key (Generate from: https://console.groq.com/)
 
 # Check if API key is available
 api_token = grok_api_key
@@ -74,10 +74,9 @@ def configure_llm():
         llm (LangChain LLM object): Configured model instance.
     """
     available_llms = {
-        "Qwen": "qwen-qwq-32b",
+        "GPT OSS 120B": "openai/gpt-oss-120b",
+        "GPT OSS 20B": "openai/gpt-oss-20b",
         "Llama 3": "llama-3.3-70b-versatile",
-        "Gemma": "gemma2-9b-it",
-        "DeepSeek": "deepseek-r1-distill-llama-70b",
         "Llama 4": "meta-llama/llama-4-scout-17b-16e-instruct",
         "GPT-4": "gpt-4"
     }
